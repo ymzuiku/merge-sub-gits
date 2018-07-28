@@ -1,4 +1,4 @@
-# 一个Git仓库管理多个Git项目
+# 使用Git配合Dropbox管理资料
 
 > 副标题: 一个Git仓库管理多个Git项目
 
