@@ -1,0 +1,26 @@
+{
+  "name": "merge-sub-gits",
+  "version": "0.2.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ymzuiku/merge-sub-gits.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bin": {
+    "merge-sub-gits": "src/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/ymzuiku/merge-sub-gits/issues"
+  },
+  "homepage": "https://github.com/ymzuiku/merge-sub-gits#readme",
+  "dependencies": {
+    "fs-extra": "^7.0.0"
+  }
+}
