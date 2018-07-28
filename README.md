@@ -1,19 +1,39 @@
-# 提交包含子.git 文件的项目
+# 一个Git仓库管理多个Git项目
 
-## 安装
+## 目的
 
-首先得确保当前有`Nodejs`环境
+平时我会把所有需要储存的资料都用git进行管理.
+
+我需要使用一个命令, 把工作中所有git仓库都提交到自己的阿里云或Dropbox上, 在不同的地方使用它.
+
+使用git配合Dropbox的另外一个好处是, 由于 `.gitignore` 忽略了许多公共资源, Dropbox只需要储存很少的内容:
+
+![](.imgs/2018-07-28-23-55-29.png)
+
+如图, 我的所有项目文件有8.75GB, 但是Dropbox上只保存着430MB的仓库
+
+如果你有和我一样的需求, 这篇文章会帮到你
+
+## merge-sub-gits 的使用方式
+
+### 安装
+
+首先得确保当前有`Nodejs`环境, 安装 [merge-sub-gits](https://github.com/ymzuiku/merge-sub-gits)
 
 ```sh
 npm install -g merge-sub-gits
 ```
 
 
-## 原理及命令
+### 原理及命令
 
 思路很简单:
 - 当git提交或拉取之前,把子git项目的`.git`文件夹重命名为`.__originGit__`文件夹,
 - 当提交或拉取之后, 把`.__originGit__`文件夹重命名回`.git`
+
+此文用到的方式和 Git Submodule 有什么不同:
+- Git Submodule 需要给每个子项目添加 submodule 文件
+- 他们的目的也不一致, `merge-sub-gits` 仅仅是希望把所有git仓库不做任何修改即可统一管理和提交
 
 #### shell 命令
 
@@ -27,8 +47,6 @@ merge-sub-gits local
 # 打印重命名日志
 merge-sub-gits xxx -l 
 ```
-
-## 具体使用方法
 
 #### 提交项目
 
@@ -50,7 +68,7 @@ git pull
 merge-sub-gits 'local'
 ```
 
-## 为以上操作设定`shell`快捷函数
+### 为以上操作设定`shell`快捷函数
 
 每次都需要使用 `merge-sub-gits` 命令包括 git 提交操作很是繁琐, 我们可以在`~/.bash_profile`文件中添加以下内容:
 
@@ -86,10 +104,46 @@ merge-sub-push 修复了以下bug 1.xxx 2.xxx
 merge-sub-pull
 ```
 
-## 修复已屏蔽的子git项目
+## 配合Dropbox或各类网盘使用
+
+我们平时会有需要把工作文件放入各类网盘中, 方便在公司和家里进行同步, 但是Dropbox\iCloud等网盘都没有给予文件夹忽略和更细腻的项目管理功能.
+
+例如一个React前端项目大概有几百MB, 如果忽略`node_modules`文件夹就只剩下几MB, 但是平时的项目如果每个都放入Dropbox, 会需要
+
+我们可以把所有工作和电脑环境相关的资料都放入一个work文件, 使用`merge-sub-gits`把改文件夹的内容同步到网盘中:
+
+#### 首先在Dropbox中创建一个 `backup-all.git` 仓库
+```sh
+cd ~/Dropbox
+git init --bare backup-all.git
+
+# 在~目录克隆本地git
+cd ~
+git clone ~/Dropbox/backup-all.git
+
+```
+我们已经在Dropbox中创建了一个仓库, 并且clone到了本地, 接下来我们拷贝所有需要备份的文件都放入 `~/backup-all` 文件夹中, 然后继续下面的操作:
+
+#### 使用 `merge-sub-gits` 进行备份
+```
+cd ~/backup-all
+
+# 备份
+# 记得提前创建.gitignore文件, 并且编写好需要忽略的内容
+merge-sub-push
+
+# 读取
+merge-sub-pull
+``` 
+如前文所述, 通过.gitignore文件和git的压缩, 把8.75GB的内容, 变为430MB进行网盘管理, 并且还有Git的版本管理功能.
+
+#### 清理Dropbox
+由于Git仓库中保存了许多历史信息, 随着长时间的使用, Git 仓库会缓慢的逐步增大, 由于我们所有子项目都保留着自己的Git历史, 所以如果有一天根Git仓库太冗余了, 我们只需要删除Dropbox的Git,重新提交即可.
+
+#### 修复已屏蔽的子git项目
 
 如果曾经在根git项目中使用过`git commit`, 会把子git项目标记为忽略提交
-这种情况需要清空git记录, 使用之前我们在`.bash_profile`设定的方法:
+这种情况需要清空git记录:
 
 ```sh
 # 从当前分支替换并清空master分支
@@ -102,3 +156,7 @@ git branch -m master
 git push -f origin master
 merge-sub-gits 'local'
 ```
+
+## 使用到的库
+
+欢迎 Star: [github.com/ymzuiku/merge-sub-gits](https://github.com/ymzuiku/merge-sub-gits)
