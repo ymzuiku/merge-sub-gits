@@ -1,24 +1,33 @@
 # 一个Git仓库管理多个Git项目
 
+> 副标题: 一个Git仓库管理多个Git项目
+
 ## 目的
 
 平时我会把所有需要储存的资料都用git进行管理.
 
 我需要使用一个命令, 把工作中所有git仓库都提交到自己的阿里云或Dropbox上, 在不同的地方使用它.
 
-使用git配合Dropbox的另外一个好处是, 由于 `.gitignore` 忽略了许多公共资源, Dropbox只需要储存很少的内容:
+使用git配合Dropbox的另外一个好处是, 由于 `.gitignore` 忽略了许多公共资源, Dropbox只需要储存很少的内容:
 
 ![](.imgs/2018-07-28-23-55-29.png)
 
-如图, 我的所有项目文件有8.75GB, 但是Dropbox上只保存着430MB的仓库
 
-如果你有和我一样的需求, 这篇文章会帮到你
+如图, 我的所有项目文件有8.75GB, 但是Dropbox上只保存着430MB的仓库, 并且还拥有Git的文件历史.
 
-## merge-sub-gits 的使用方式
+如果你有和我一样的需求, 这篇文章会帮到你.
+
+## 需要解决问题
+1. 每个Git仓库保留自己原有的Git功能, 并且不能有丝毫改动, 毕竟它们还需要保持平日的工作
+2. Git Submodule 和 SubTree 对原有仓库有改动, 并且不能很好的实现以上需求
+3. 有一个统一的仓库管理这些所有仓库
+4. 最终需要仅仅一个简单的命令完成平时备份&拉取的工作
+
+## 使用 merge-sub-gits 解决以上问题
 
 ### 安装
 
-首先得确保当前有`Nodejs`环境, 安装 [merge-sub-gits](https://github.com/ymzuiku/merge-sub-gits)
+首先得确保当前有`Nodejs`环境, 安装 [merge-sub-gits](https://github.com/ymzuiku/merge-sub-gits)
 
 ```sh
 npm install -g merge-sub-gits
@@ -30,10 +39,6 @@ npm install -g merge-sub-gits
 思路很简单:
 - 当git提交或拉取之前,把子git项目的`.git`文件夹重命名为`.__originGit__`文件夹,
 - 当提交或拉取之后, 把`.__originGit__`文件夹重命名回`.git`
-
-此文用到的方式和 Git Submodule 有什么不同:
-- Git Submodule 需要给每个子项目添加 submodule 文件
-- 他们的目的也不一致, `merge-sub-gits` 仅仅是希望把所有git仓库不做任何修改即可统一管理和提交
 
 #### shell 命令
 
@@ -104,16 +109,21 @@ merge-sub-push 修复了以下bug 1.xxx 2.xxx
 merge-sub-pull
 ```
 
-## 配合Dropbox或各类网盘使用
+## 配合Dropbox或各类网盘使用
 
-我们平时会有需要把工作文件放入各类网盘中, 方便在公司和家里进行同步, 但是Dropbox\iCloud等网盘都没有给予文件夹忽略和更细腻的项目管理功能.
+> 如果上文你已经看懂了, 并且有一些基本的Git使用经验, 下文就不需要继续阅读了, 相信你自己就可以使用 `merge-sub-gits` 完成目的.
+
+我们平时会有需要把工作文件放入各类网盘中, 方便在公司和家里进行同步, 但是Dropbox\iCloud等网盘都没有给予文件夹忽略和更细腻的Git的文件历史.
 
 例如一个React前端项目大概有几百MB, 如果忽略`node_modules`文件夹就只剩下几MB, 但是平时的项目如果每个都放入Dropbox, 会需要
 
-我们可以把所有工作和电脑环境相关的资料都放入一个work文件, 使用`merge-sub-gits`把改文件夹的内容同步到网盘中:
+我们可以把所有工作和电脑环境相关的资料都放入一个work文件, 使用`merge-sub-gits`把改文件夹的内容同步到网盘中:
 
-#### 首先在Dropbox中创建一个 `backup-all.git` 仓库
+#### 首先在Dropbox中创建一个 `backup-all.git` 仓库
 ```sh
+# 使用iCloud就把仓库创建在: ~/Library/Mobile Documents/com~apple~CloudDocs/
+# 使用Dropbox就把仓库创建在: ~/Dropbox
+
 cd ~/Dropbox
 git init --bare backup-all.git
 
@@ -135,10 +145,10 @@ merge-sub-push
 # 读取
 merge-sub-pull
 ``` 
-如前文所述, 通过.gitignore文件和git的压缩, 把8.75GB的内容, 变为430MB进行网盘管理, 并且还有Git的版本管理功能.
+如前文所述, 通过.gitignore文件和git的压缩, 把8.75GB的内容, 变为430MB进行网盘管理, 并且还有Git的版本管理功能.
 
 #### 清理Dropbox
-由于Git仓库中保存了许多历史信息, 随着长时间的使用, Git 仓库会缓慢的逐步增大, 由于我们所有子项目都保留着自己的Git历史, 所以如果有一天根Git仓库太冗余了, 我们只需要删除Dropbox的Git,重新提交即可.
+由于Git仓库中保存了许多历史信息, 随着长时间的使用, Git 仓库会缓慢的逐步增大, 由于我们所有子项目都保留着自己的Git历史, 所以如果有一天根Git仓库太冗余了, 我们只需要删除Dropbox的Git,重新提交即可.
 
 #### 修复已屏蔽的子git项目
 
